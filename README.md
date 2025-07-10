@@ -10,7 +10,7 @@ This repository was created for the [Agent2Agent (A2A) UI](https://github.com/A2
 
 To use the OpenAI Tavily Agent with the A2A protocol:
 
-1.  Clone the repository: `git clone https://github.com/FlynnLachendro/OpenAITavilyAgent-SDK.git`
+1.  Clone the repository: `git clone https://github.com/FlynnLachendro/TavilyAgentOpenAI.git`
 2.  `cd OpenAITavilyAgent-SDK`
 3.  Create an `.env` file.
 4.  Set `OPENAI_API_KEY` and `TAVILY_API_KEY` in your `.env` file.
