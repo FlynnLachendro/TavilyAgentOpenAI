@@ -1,5 +1,3 @@
-# openai_agent_executor.py
-
 import asyncio
 from loguru import logger
 
@@ -14,7 +12,7 @@ from a2a.types import (
 )
 from a2a.utils import new_task, new_agent_text_message, new_text_artifact
 
-from test_agent_cli import tavily_agent, Runner
+from agent_logic import tavily_agent, Runner
 
 class OpenAIAgentExecutor(AgentExecutor):
     def __init__(self) -> None:
