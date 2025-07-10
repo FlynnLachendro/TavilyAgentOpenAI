@@ -14,7 +14,6 @@ from a2a.types import (
 )
 from a2a.utils import new_task, new_agent_text_message, new_text_artifact
 
-# Make sure this filename matches the one you have (e.g., test_agent_cli.py)
 from test_agent_cli import tavily_agent, Runner
 
 class OpenAIAgentExecutor(AgentExecutor):
@@ -22,10 +21,6 @@ class OpenAIAgentExecutor(AgentExecutor):
         pass
 
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        """
-        Handles the A2A request by running the agent asynchronously and then
-        processing its result.
-        """
         query: str = context.get_user_input()
         task: Task | None = context.current_task
 
@@ -39,22 +34,18 @@ class OpenAIAgentExecutor(AgentExecutor):
         
         try:
             logger.info("Starting agent execution...")
-            # THE KEY FIX: Use the async Runner.run() and await it directly.
-            # No threads, no extra loops needed.
             run_result = await Runner.run(tavily_agent, conversation_history)
 
             if run_result and run_result.final_output:
                 logger.info("Agent execution finished, creating artifact.")
                 final_output = str(run_result.final_output)
 
-                # Now that we have the result, put it on the queue
                 final_artifact = new_text_artifact(
                     name="OpenAI Agent Result",
                     description=f"Result for query: {query}",
                     text=final_output,
                 )
                 await event_queue.enqueue_event(TaskArtifactUpdateEvent(artifact=final_artifact, contextId=task.contextId, taskId=task.id))
-                
                 await event_queue.enqueue_event(TaskStatusUpdateEvent(status=TaskStatus(state=TaskState.completed), final=True, contextId=task.contextId, taskId=task.id))
             else:
                 raise Exception("Agent did not produce a final result.")
@@ -69,7 +60,6 @@ class OpenAIAgentExecutor(AgentExecutor):
                 taskId=task.id
             ))
         finally:
-            # Always close the queue to signal completion to the A2A server
             await event_queue.close()
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
