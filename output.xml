@@ -1,0 +1,496 @@
+<onefilellm_output>
+<source type="local_file" path="./test_agent.py">
+<file path="test_agent.py">
+# Renamed from test_agent_cli.py to test_agent.py
+from agents import Runner
+from agent import tavily_agent
+
+def run_chat_session():
+    """
+    Runs a continuous chat loop in the terminal with the Tavily agent.
+    """
+    print("\nAgent is ready! You can now start the conversation.")
+    print("Type 'exit' or 'quit' to end the chat.")
+    print("-" * 50)
+
+    conversation_history = []
+
+    while True:
+        user_query = input("You: ")
+        if user_query.lower() in ['exit', 'quit']:
+            print("Ending chat. Goodbye!")
+            break
+
+        conversation_history.append({"role": "user", "content": user_query})
+
+        print("Assistant is thinking...")
+        result = Runner.run_sync(tavily_agent, conversation_history)
+        
+        assistant_response = str(result.final_output)
+        print(f"\nAssistant: {assistant_response}\n")
+        print("-" * 50)
+
+        conversation_history = result.to_input_list()
+
+if __name__ == "__main__":
+    run_chat_session() 
+</file>
+</source>
+<source type="local_file" path="./LICENSE">
+<file path="LICENSE">
+Copyright 2025 Flynn Lachendro
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</file>
+</source>
+<source type="local_file" path="./requirements.txt">
+<file path="requirements.txt">
+a2a-sdk==0.2.11
+aiosqlite==0.21.0
+annotated-types==0.7.0
+anyio==4.9.0
+attrs==25.3.0
+cachetools==5.5.2
+certifi==2025.7.9
+charset-normalizer==3.4.2
+click==8.2.1
+colorama==0.4.6
+distro==1.9.0
+fastapi==0.116.0
+google-api-core==2.25.1
+google-auth==2.40.3
+googleapis-common-protos==1.70.0
+greenlet==3.2.3
+griffe==1.7.3
+grpcio==1.73.1
+grpcio-reflection==1.71.2
+grpcio-tools==1.71.2
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+httpx-sse==0.4.1
+idna==3.10
+importlib-metadata==8.7.0
+jiter==0.10.0
+jsonschema==4.24.0
+jsonschema-specifications==2025.4.1
+loguru==0.7.3
+mcp==1.10.1
+openai==1.93.3
+openai-agents==0.1.0
+opentelemetry-api==1.34.1
+opentelemetry-sdk==1.34.1
+opentelemetry-semantic-conventions==0.55b1
+proto-plus==1.26.1
+protobuf==5.29.5
+pyasn1==0.6.1
+pyasn1-modules==0.4.2
+pydantic==2.11.7
+pydantic-core==2.33.2
+pydantic-settings==2.10.1
+python-dotenv==1.1.1
+python-multipart==0.0.20
+referencing==0.36.2
+regex==2024.11.6
+requests==2.32.4
+rpds-py==0.26.0
+rsa==4.9.1
+setuptools==80.9.0
+sniffio==1.3.1
+sqlalchemy==2.0.41
+sse-starlette==2.4.1
+starlette==0.46.2
+tavily-python==0.7.9
+tiktoken==0.9.0
+tqdm==4.67.1
+types-requests==2.32.4.20250611
+typing-extensions==4.14.1
+typing-inspection==0.4.1
+urllib3==2.5.0
+uvicorn==0.35.0
+zipp==3.23.0
+
+</file>
+</source>
+<source type="local_file" path="./Dockerfile">
+<file path="Dockerfile">
+# Use a minimal Python 3.13 image with uv pre-installed
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+
+# Prevent Python from writing .pyc files and enable unbuffered output
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy dependency list and install Python dependencies
+COPY requirements.txt ./
+RUN uv pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Expose port 8080 for the application
+EXPOSE 8080
+
+# Start the application using uvicorn, pointing to main.py
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+</file>
+</source>
+<source type="local_file" path="./README.md">
+<file path="README.md">
+# OpenAI Tavily Agent
+
+An `openai-agents` SDK agent that implements the [Agent2Agent (A2A) Protocol](https://google-a2a.github.io/A2A/) with access to the [Tavily Search API](https://www.tavily.com/).
+
+This repository was created for the [Agent2Agent (A2A) UI](https://github.com/A2ANet/A2AUI) and shows an A2A-compatible agent using OpenAI's native agent framework.
+
+## Installation & Usage
+
+### Local A2A Server
+
+To use the OpenAI Tavily Agent with the A2A protocol:
+
+1.  Clone the repository: `git clone https://github.com/FlynnLachendro/TavilyAgentOpenAI.git`
+2.  `cd TavilyAgentOpenAI`
+3.  Create an `.env` file. A `.env.example` is provided for reference.
+4.  Set `OPENAI_API_KEY` and `TAVILY_API_KEY` in your `.env` file.
+5.  Install `uv` and `pyenv` if you haven't already.
+6.  Set up the virtual environment and install dependencies:
+    ```bash
+    uv venv
+    source .venv/bin/activate
+    uv pip install -r requirements.txt
+    ```
+7.  Run the A2A server using `uv` which will load the `.env` file:
+    ```bash
+    uv run --env-file .env main.py
+    ```
+    The server will be available at `http://localhost:9998`.
+
+### CLI Dev Mode
+
+To test the core agent logic directly in your terminal without the A2A server:
+
+1.  Complete steps 1-6 from the "Local A2A Server" section above.
+2.  Run the agent's command-line interface:
+    ```bash
+    uv run --env-file .env test_agent.py
+    ```
+
+This allows for quick interaction with the agent's internal workings.
+
+### Docker A2A Server
+
+To run the agent using Docker:
+
+1.  Clone the repository.
+2.  Build the Docker image: `docker build -t openai-tavily-agent .`
+3.  Run the container, providing your API keys as environment variables:
+
+    ```bash
+    docker run --rm -p 9998:8080 \
+      -e TAVILY_API_KEY='your_tavily_api_key' \
+      -e OPENAI_API_KEY='your_openai_api_key' \
+      openai-tavily-agent
+    ```
+
+    _Note: The container exposes port 8080 internally, which we map to 9998 on the host machine._
+
+The server will start on `http://localhost:9998`.
+
+## Deployment
+
+You can deploy the containerised agent to various cloud platforms.
+
+### Google Cloud Run
+
+To deploy the agent (and set up continuous deployment) with Google Cloud Run:
+
+1.  Fork this repository.
+2.  Go to [https://cloud.google.com/](https://cloud.google.com/)
+3.  Create or select a project and enable billing.
+4.  Search for "Cloud Run".
+5.  Click "Connect repo".
+6.  Select "Continuously deploy from a repository (source or function)".
+7.  Click "Set up with Cloud Build".
+8.  Select your forked repository > click "Next".
+9.  Select "Dockerfile" > click "Save".
+10. Under "Authentication", select "Allow unauthenticated invocations".
+11. Copy the "Endpoint URL" that is generated.
+12. Expand "Containers, Volumes, Networking, Security" > go to "Variables & Secrets" > click "Add variable".
+13. Set "Name" to `SERVICE_URL` and "Value" to the copied "Endpoint URL".
+14. Under "Secrets exposed as environment variables", click "Reference a secret".
+15. Set "Name" to `OPENAI_API_KEY`. Click "Secret" > "Create new secret", name it `OPENAI_API_KEY`, and paste your secret value. Set "Version" to "latest".
+16. Click "Reference a secret" again.
+17. Set "Name" to `TAVILY_API_KEY`. Create a new secret named `TAVILY_API_KEY` with your key and set "Version" to "latest".
+18. Click "Done", then click "Create".
+19. The first deployment might fail due to permissions. In the error message, copy the revision service account email (e.g., "XXXXXXXXXXXX-compute@developer.gserviceaccount.com").
+20. Go to "Secret Manager", select both the `OPENAI_API_KEY` and `TAVILY_API_KEY` secrets.
+21. In the right-hand permissions panel, click "ADD PRINCIPAL".
+22. Paste the service account email as the "New principal".
+23. Select the role "Secret Manager Secret Accessor".
+24. Click "Save".
+25. Go back to "Cloud Run" and "Edit & deploy new revision" > Click "Deploy".
+
+The agent should now be deployed successfully!
+
+#### Retrieve the Agent Card
+
+1.  Copy the service "URL" from your Cloud Run service page.
+2.  Open a new tab, paste the URL, and add `/.well-known/agent.json` to the end.
+3.  You should see the raw JSON of the Agent Card.
+
+#### Connect with the A2A UI
+
+1.  Run the [Agent2Agent (A2A) UI](https://github.com/A2ANet/A2AUI) locally.
+2.  Click "+ Agent" and paste your public Cloud Run URL (e.g. `https://openai-tavily-agent-XXXXXXXXXXXX.region.run.app`).
+3.  Send a message. You should get a response from your cloud-hosted agent!
+
+The agent is now set up to automatically redeploy when changes are pushed to the main branch of your forked repo.
+
+</file>
+</source>
+<source type="local_file" path="./.gitignore">
+<file path=".gitignore">
+.venv
+.venv/
+venv/
+env/
+ENV/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+*.egg
+.DS_Store
+.vscode/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+.pyenv-plugins/
+.pyenv
+</file>
+</source>
+<source type="local_file" path="./agent_executor.py">
+<file path="agent_executor.py">
+# Renamed from openai_agent_executor.py to agent_executor.py
+import json
+from loguru import logger
+
+from a2a.server.agent_execution import AgentExecutor, RequestContext
+from a2a.server.events.event_queue import EventQueue
+from a2a.types import (
+    Message,
+    Task,
+    TaskArtifactUpdateEvent,
+    TaskState,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+)
+from a2a.utils import new_task, new_agent_text_message, new_text_artifact
+
+# Renamed import from agent_logic to agent
+from agent import tavily_agent
+from agents import Runner
+
+class OpenAIAgentExecutor(AgentExecutor):
+    # CORRECTED: The constructor method must be __init__ with double underscores.
+    def __init__(self) -> None:
+        pass
+
+    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        query: str = context.get_user_input()
+        task: Task | None = context.current_task
+
+        if not context.message:
+            raise Exception("No message in context")
+
+        if not task:
+            task = new_task(context.message)
+        if not task:
+            raise Exception("Task could not be created from context.message")
+
+        # Pass the query string directly to Runner.run (not a list of dicts)
+        try:
+            logger.info("Starting agent execution...")
+            run_result = await Runner.run(tavily_agent, query)
+            
+            # --- Stream Tool Calls to the A2A UI ---
+            full_history = run_result.to_input_list()
+            # TaskMessageUpdateEvent does not exist; skipping streaming tool calls for now
+            # for turn in full_history:
+            #     if turn.get("role") == "assistant" and turn.get("tool_calls"):
+            #         logger.info(f"Streaming tool call to A2AUI: {turn['tool_calls']}")
+            #         tool_call_message = Message(
+            #             content=json.dumps(turn['tool_calls'], indent=2),
+            #             metadata={"type": "tool-call"}, # This is critical for the UI
+            #             parent_id=task.id,
+            #             contextId=task.contextId,
+            #             agentId=context.request.agentId
+            #         )
+            #         await event_queue.enqueue_event(TaskMessageUpdateEvent(message=tool_call_message, contextId=task.contextId, taskId=task.id))
+            
+            # --- Send Final Artifact ---
+            if run_result and run_result.final_output:
+                logger.info("Agent execution finished, creating final artifact.")
+                final_output = str(run_result.final_output)
+
+                final_artifact = new_text_artifact(
+                    name="OpenAI Agent Result",
+                    description=f"Result for query: {query}",
+                    text=final_output,
+                )
+                await event_queue.enqueue_event(TaskArtifactUpdateEvent(artifact=final_artifact, contextId=task.contextId, taskId=task.id))
+                await event_queue.enqueue_event(TaskStatusUpdateEvent(status=TaskStatus(state=TaskState.completed), final=True, contextId=task.contextId, taskId=task.id))
+            else:
+                raise Exception("Agent did not produce a final result.")
+
+        except Exception as e:
+            logger.error(f"Error during agent execution: {e}")
+            error_message = new_agent_text_message(f"An error occurred: {e}", task.contextId, task.id)
+            await event_queue.enqueue_event(TaskStatusUpdateEvent(
+                status=TaskStatus(state=TaskState.failed, message=error_message), 
+                final=True,
+                contextId=task.contextId,
+                taskId=task.id
+            ))
+        finally:
+            await event_queue.close()
+
+    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
+        if not context.current_task:
+            logger.warning("Cancel operation was called but there is no current task in context.")
+            return
+        logger.warning(f"Cancel operation was called for task {context.current_task.id}, but is not implemented.")
+        pass
+
+</file>
+</source>
+<source type="local_file" path="./agent.py">
+<file path="agent.py">
+# Renamed from agent_logic.py to agent.py
+import os
+import json
+from agents import Agent, function_tool as tool
+from tavily import TavilyClient
+
+print("Loading API keys and initializing clients...")
+
+try:
+    # This relies on the environment variable being set by 'uv run' or Docker
+    tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
+    print("Tavily client initialized.")
+except KeyError:
+    print("FATAL ERROR: TAVILY_API_KEY not found in environment. Ensure it's in your .env file or set directly.")
+    exit()
+
+@tool
+def tavily_search(query: str):
+    """
+    Searches the web using the Tavily API for a given query.
+    Use this for any questions about recent events, facts, or information.
+    Args:
+        query (str): The search query to find information about.
+    """
+    print(f"--- AGENT ACTION: Calling Tavily Search with query: '{query}' ---")
+    try:
+        response = tavily_client.search(query=query, search_depth="advanced", max_results=5)
+        # The openai-agents SDK expects the tool to return a string, so we serialize the JSON
+        return json.dumps(response['results'])
+    except Exception as e:
+        return f"Error occurred during Tavily search: {e}"
+
+print("Configuring the agent...")
+tavily_agent = Agent(
+    name="TavilySearchAssistant",
+    instructions=(
+        "You are a helpful assistant that can search the web with the Tavily API "
+        "and answer questions about the results. If the search tool returns insufficient "
+        "results or an error, explain that to the user and ask them to try again "
+        "with a more specific query. Format your answers clearly using markdown."
+    ),
+    model="gpt-4o",
+    tools=[tavily_search],
+)
+print("Agent configured successfully.") 
+</file>
+</source>
+<source type="local_file" path="./.python-version">
+<file path=".python-version">
+3.13.5
+
+</file>
+</source>
+<source type="local_file" path="./main.py">
+<file path="main.py">
+# Renamed from a2a_main.py to main.py
+import os
+import uvicorn
+
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+
+# Renamed import from openai_agent_executor to agent_executor
+from agent_executor import OpenAIAgentExecutor
+
+# Agent skill definition
+skill = AgentSkill(
+    id="openai-search-web",
+    name="OpenAI Search Web",
+    description="Search the web with Tavily, powered by OpenAI's agent framework.",
+    tags=["search", "web", "tavily", "openai"],
+    examples=["Who is the CEO of Microsoft?"],
+)
+
+port: int = int(os.getenv("PORT", "9998"))
+service_url: str = os.getenv("SERVICE_URL", f"http://localhost:{port}")
+
+agent_card = AgentCard(
+    name="OpenAI Tavily Agent",
+    description="An agent that uses Tavily Search, built with the OpenAI Agents SDK.",
+    url=service_url,
+    version="1.0.0",
+    defaultInputModes=["text", "text/plain"],
+    defaultOutputModes=["text", "text/plain"],
+    capabilities=AgentCapabilities(),
+    skills=[skill],
+)
+
+request_handler = DefaultRequestHandler(
+    agent_executor=OpenAIAgentExecutor(), 
+    task_store=InMemoryTaskStore()
+)
+
+server = A2AStarletteApplication(
+    agent_card=agent_card, 
+    http_handler=request_handler
+)
+
+app = server.build()
+
+if __name__ == "__main__":
+    print(f"Starting OpenAI Tavily A2A Agent on http://0.0.0.0:{port}")
+    # NOTE: The recommended way to run this is with 'uvicorn main:app --env-file .env'
+    uvicorn.run(app, host="0.0.0.0", port=port) 
+</file>
+</source>
+</onefilellm_output>

@@ -1,5 +1,7 @@
-from agents import Runner
-from agent_logic import tavily_agent
+# Renamed from test_agent_cli.py to test_agent.py
+import json
+from agents.run import Runner
+from agent import tavily_agent
 
 def run_chat_session():
     """
@@ -29,4 +31,4 @@ def run_chat_session():
         conversation_history = result.to_input_list()
 
 if __name__ == "__main__":
-    run_chat_session()
+    run_chat_session() 

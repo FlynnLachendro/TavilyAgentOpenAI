@@ -18,5 +18,5 @@ COPY . .
 # Expose port 8080 for the application
 EXPOSE 8080
 
-# Start the application using uvicorn
-CMD ["uvicorn", "a2a_main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Start the application using uvicorn, pointing to main.py
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

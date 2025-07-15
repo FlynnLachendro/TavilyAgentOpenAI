@@ -10,9 +10,9 @@ This repository was created for the [Agent2Agent (A2A) UI](https://github.com/A2
 
 To use the OpenAI Tavily Agent with the A2A protocol:
 
-1.  Clone the repository: `git clone https://github.com/FlynnLachendro/OpenAITavilyAgent-SDK.git`
-2.  `cd OpenAITavilyAgent-SDK`
-3.  Create an `.env` file.
+1.  Clone the repository: `git clone https://github.com/FlynnLachendro/TavilyAgentOpenAI.git`
+2.  `cd TavilyAgentOpenAI`
+3.  Create an `.env` file. A `.env.example` is provided for reference.
 4.  Set `OPENAI_API_KEY` and `TAVILY_API_KEY` in your `.env` file.
 5.  Install `uv` and `pyenv` if you haven't already.
 6.  Set up the virtual environment and install dependencies:
@@ -21,14 +21,21 @@ To use the OpenAI Tavily Agent with the A2A protocol:
     source .venv/bin/activate
     uv pip install -r requirements.txt
     ```
-7.  Run the A2A server: `uv run a2a_main.py`
+7.  Run the A2A server using `uv` which will load the `.env` file:
+    ```bash
+    uv run --env-file .env main.py
+    ```
+    The server will be available at `http://localhost:9998`.
 
 ### CLI Dev Mode
 
 To test the core agent logic directly in your terminal without the A2A server:
 
 1.  Complete steps 1-6 from the "Local A2A Server" section above.
-2.  Run the agent's command-line interface: `uv run test_agent_cli.py`
+2.  Run the agent's command-line interface:
+    ```bash
+    uv run --env-file .env test_agent.py
+    ```
 
 This allows for quick interaction with the agent's internal workings.
 
@@ -41,11 +48,13 @@ To run the agent using Docker:
 3.  Run the container, providing your API keys as environment variables:
 
     ```bash
-    docker run --rm -p 9998:9998 \
+    docker run --rm -p 9998:8080 \
       -e TAVILY_API_KEY='your_tavily_api_key' \
       -e OPENAI_API_KEY='your_openai_api_key' \
       openai-tavily-agent
     ```
+
+    _Note: The container exposes port 8080 internally, which we map to 9998 on the host machine._
 
 The server will start on `http://localhost:9998`.
 

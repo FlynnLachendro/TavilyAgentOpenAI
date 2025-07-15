@@ -1,15 +1,14 @@
+# Renamed from a2a_main.py to main.py
 import os
 import uvicorn
-from dotenv import load_dotenv
 
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
-from openai_agent_executor import OpenAIAgentExecutor
-
-load_dotenv()
+# Renamed import from openai_agent_executor to agent_executor
+from agent_executor import OpenAIAgentExecutor
 
 # Agent skill definition
 skill = AgentSkill(
@@ -48,4 +47,5 @@ app = server.build()
 
 if __name__ == "__main__":
     print(f"Starting OpenAI Tavily A2A Agent on http://0.0.0.0:{port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    # NOTE: The recommended way to run this is with 'uvicorn main:app --env-file .env'
+    uvicorn.run(app, host="0.0.0.0", port=port) 
