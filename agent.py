@@ -7,7 +7,6 @@ from tavily import TavilyClient
 print("Loading API keys and initializing clients...")
 
 try:
-    # This relies on the environment variable being set by 'uv run' or Docker
     tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
     print("Tavily client initialized.")
 except KeyError:

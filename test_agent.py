@@ -1,34 +1,26 @@
-# Renamed from test_agent_cli.py to test_agent.py
+# FILE: test_agent.py
+
 import json
 from agents.run import Runner
 from agent import tavily_agent
-
-def run_chat_session():
-    """
-    Runs a continuous chat loop in the terminal with the Tavily agent.
-    """
-    print("\nAgent is ready! You can now start the conversation.")
-    print("Type 'exit' or 'quit' to end the chat.")
-    print("-" * 50)
-
-    conversation_history = []
-
-    while True:
-        user_query = input("You: ")
-        if user_query.lower() in ['exit', 'quit']:
-            print("Ending chat. Goodbye!")
-            break
-
-        conversation_history.append({"role": "user", "content": user_query})
-
-        print("Assistant is thinking...")
-        result = Runner.run_sync(tavily_agent, conversation_history)
-        
-        assistant_response = str(result.final_output)
-        print(f"\nAssistant: {assistant_response}\n")
-        print("-" * 50)
-
-        conversation_history = result.to_input_list()
+# This is the correct, evidence-based import path.
+# from a2a.types import Message
 
 if __name__ == "__main__":
-    run_chat_session() 
+    # A query that will force the agent to use the search tool
+    test_query = "What is the latest transfer news for Chelsea FC in 2025?"
+    
+    print(f"--- Running a single test with query: '{test_query}' ---")
+
+    # Pass the query string directly to Runner.run_sync
+    result = Runner.run_sync(tavily_agent, test_query)
+    
+    # This is the crucial part: Get the full history and print it
+    full_history = result.to_input_list()
+
+    print("\n--- AGENT EXECUTION HISTORY (The data we need to inspect) ---")
+    # Pretty-print the JSON so we can easily see the structure
+    print(json.dumps(full_history, indent=2))
+    print("-----------------------------------------------------------\n")
+
+    print(f"Final Output: {result.final_output}")
